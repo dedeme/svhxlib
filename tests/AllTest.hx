@@ -1,7 +1,9 @@
-import dm.It;
+// Copyright 03-Mar-2021 ºDeme
+// GNU General Public License - V3 <http://www.gnu.org/licenses/>
 
 class AllTest {
   public static function main () {
-    It.range(4).each(i -> trace(i));
+    ExcTests.run();
+    FileTest.main();
   }
 }
