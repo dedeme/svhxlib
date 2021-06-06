@@ -4,11 +4,13 @@
 package dm;
 
 import sys.FileSystem;
+import sys.FileStat;
 import sys.io.File as HxFile;
 import sys.io.FileOutput;
 import sys.io.FileInput;
 import haxe.io.Bytes;
 
+/// Utilities for file management.
 class File {
   /// Returns true if 'path' exists in the file system.
   inline public static function exists (path: String): Bool {
@@ -37,14 +39,50 @@ class File {
     FileSystem.createDirectory(path);
   }
 
+  /// Returns a list with the directory entries.
+  /// Values '.' and '..' are not in return.
+  inline public static function dir (path: String): Array<String> {
+    return FileSystem.readDirectory(path);
+  }
+
+  /// Returns data from a file. Among others:
+  ///   .size (Int) - Bytes of file.
+  ///   .mtime (Date) - Last modificatoin date.
+  ///   .atime (Date) - Last access date.
+  ///   .ctime (Date) - Last creation date.
+  ///   .uid (Int) - User id.
+  ///   .gid (Int) - Group id.
+  inline public static function stat (path: String): FileStat {
+    return FileSystem.stat(path);
+  }
+
   /// Read a text file.
+  /// This function opens, reads and closes file.
   inline public static function read (path: String): String {
     return HxFile.getContent(path);
   }
 
   /// Write a text file.
+  /// This function opens, writes and closes file.
   inline public static function write (path: String, tx: String): Void {
     HxFile.saveContent(path, tx);
+  }
+
+  /// Copy source to target.
+  inline public static function copy (source: String, target: String): Void {
+    HxFile.copy(source, target);
+  }
+
+  /// Remove recursively 'path'.
+  inline public static function del (path: String): Void {
+    if (isDirectory(path)) {
+      for (e in dir(path)) {
+        del(path + "/" + e);
+      }
+      FileSystem.deleteDirectory(path);
+    } else {
+      FileSystem.deleteFile(path);
+    }
   }
 
   /// Open a file for writing.
