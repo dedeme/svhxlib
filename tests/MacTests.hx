@@ -26,9 +26,6 @@ class MacTests {
     t.eq(JsTstType.to(B).to(), "\"B\"");
     t.eq(JsTstType.from(Js.ws("B")), B);
 
-    final t3 = t2.setV1(100);
-    t.eq(t3.v1, 100);
-
     // Added fields.
     t.eq(t2.sum(3), 15);
     t.eq(MacTst.sum2(3, 2), 5);
