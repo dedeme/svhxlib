@@ -7,25 +7,84 @@ import dm.Path;
 import dm.Cryp;
 import dm.Opt;
 import dm.Dt;
-//import dm.Mac;
 
-@:build(dm.Mac.record([
-  "id: String",
-  "pass: String",
-  "level: String"
-  ], true))
-private class User {}
+private class User {
+  public final id: String;
+  public final pass: String;
+  public final level: String;
 
-@:build(dm.Mac.record([
-  "id: String",
-  "comKey: String", // Communication key.
-  "conKey: String", // Connection key.
-  "user: String", // User id.
-  "level: String", // User level.
-  "time: Float", // Time of last connection in milliseconds.
-  "lapse: Int", // Maximum lapse of stand by in milliseconds.
-  ], true))
-private class Session {}
+  public function new (id: String, pass: String, level: String) {
+    this.id = id;
+    this.pass = pass;
+    this.level = level;
+  }
+
+  public function toJs (): Js {
+    return Js.wa([
+      Js.ws(id),
+      Js.ws(pass),
+      Js.ws(level)
+    ]);
+  }
+
+  public static function fromJs (js: Js): User {
+    final a = js.ra();
+    return new User(
+      a[0].rs(),
+      a[1].rs(),
+      a[2].rs()
+    );
+  }
+}
+
+private class Session {
+  public final id: String;
+  public final comKey: String;
+  public final conKey: String;
+  public final user: String;
+  public final level: String;
+  public final time: Float;
+  public final lapse: Int;
+
+  public function new (
+    id: String, comKey: String, conKey: String,
+    user: String, level: String,
+    time: Float, lapse: Int
+  ) {
+    this.id = id;
+    this.comKey = comKey;
+    this.conKey = conKey;
+    this.user = user;
+    this.level = level;
+    this.time = time;
+    this.lapse = lapse;
+  }
+
+  public function toJs (): Js {
+    return Js.wa([
+      Js.ws(id),
+      Js.ws(comKey),
+      Js.ws(conKey),
+      Js.ws(user),
+      Js.ws(level),
+      Js.wf(time),
+      Js.wi(lapse)
+    ]);
+  }
+
+  public static function fromJs (js: Js): Session {
+    final a = js.ra();
+    return new Session(
+      a[0].rs(),
+      a[1].rs(),
+      a[2].rs(),
+      a[3].rs(),
+      a[4].rs(),
+      a[5].rf(),
+      a[6].ri()
+    );
+  }
+}
 
 /// Utilities for HTML conections between client - server.
 class Cgi {

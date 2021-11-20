@@ -60,19 +60,38 @@ class DtTests {
     t.eq(Dt.weekDay(Dt.mk(14, 7, 2019)), 0);
 
     d = Date.now();
-    var d0 = Dt.addMillis(d, 0);
-    d1 = Dt.addMillis(d, 5);
-    d2 = Dt.addMillis(d, -15);
 
-    t.yes(Dt.eqTime(d, d0));
-    t.not(Dt.eqTime(d, d1));
-    t.not(Dt.eqTime(d, d2));
-    t.eq(Dt.compareTime(d, d0), 0);
-    t.yes(Dt.compareTime(d, d1) < 0);
-    t.yes(Dt.compareTime(d, d2) > 0);
-    t.eq(Dt.dfMillis(d, d0), 0);
-    t.eq(Dt.dfMillis(d, d1), -5);
-    t.eq(Dt.dfMillis(d, d2), 15);
+    if (Dt.eqTime(Dt.addMillis(d, 120), d) ||
+        Dt.eqTime(Dt.addMillis(d, -120), d)
+    ){
+      var d0 = Dt.addSeconds(d, 0);
+      d1 = Dt.addSeconds(d, 5);
+      d2 = Dt.addSeconds(d, -15);
+
+      t.yes(Dt.eqTime(d, d0));
+      t.not(Dt.eqTime(d, d1));
+      t.not(Dt.eqTime(d, d2));
+      t.eq(Dt.compareTime(d, d0), 0);
+      t.yes(Dt.compareTime(d, d1) < 0);
+      t.yes(Dt.compareTime(d, d2) > 0);
+      t.eq(Dt.dfMillis(d, d0), 0);
+      t.eq(Dt.dfMillis(d, d1), -5000);
+      t.eq(Dt.dfMillis(d, d2), 15000);
+    } else {
+      var d0 = Dt.addMillis(d, 0);
+      d1 = Dt.addMillis(d, 5);
+      d2 = Dt.addMillis(d, -15);
+
+      t.yes(Dt.eqTime(d, d0));
+      t.not(Dt.eqTime(d, d1));
+      t.not(Dt.eqTime(d, d2));
+      t.eq(Dt.compareTime(d, d0), 0);
+      t.yes(Dt.compareTime(d, d1) < 0);
+      t.yes(Dt.compareTime(d, d2) > 0);
+      t.eq(Dt.dfMillis(d, d0), 0);
+      t.eq(Dt.dfMillis(d, d1), -5);
+      t.eq(Dt.dfMillis(d, d2), 15);
+    }
 
     t.log();
   }

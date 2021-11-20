@@ -1,0 +1,9 @@
+--class-path src
+
+--class-path /dm/dmHaxe/lib/cmhxlib/src
+--class-path /dm/dmHaxe/lib/svhxlib/src
+
+--dce full
+--hl bin/_out/AllTest.c
+--main AllTest
+

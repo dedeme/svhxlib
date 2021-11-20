@@ -14,7 +14,6 @@ class AllTest {
     DtTests.run();
     JsTests.run();
     PathTests.run();
-    MacTests.run();
     FileTest.main();
   }
 }
