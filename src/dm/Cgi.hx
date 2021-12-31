@@ -104,6 +104,9 @@ class Cgi {
 
   // File password.
   static final fkey = Cryp.key(demeKey, demeKey.length);
+  /// Communication key.
+  static var comKey: String = null;
+  // Expiration in seconds.
   static var tExpiration: Int;
 
   // PRIVATE FUNCTIONS -------------------------------------------------------
@@ -177,7 +180,7 @@ class Cgi {
   ///                   or
   ///                   "/home/deme/.dmCApp/JsMon".
   ///   tExpiration: Time in seconds.
-  public static function init (home: String, tExpiration: Int): Bool {
+  public static function init (home: String, tExpiration: Int): Void {
     Cgi.home = home;
     Cgi.tExpiration = tExpiration;
 
@@ -188,7 +191,6 @@ class Cgi {
       putUser("admin", demeKey, "0");
       writeSessions([]);
     }
-    return create;
   }
 
   // USERS
@@ -241,7 +243,8 @@ class Cgi {
   ///                 user  : String
   ///                 level : String.
   public static function connect (sessionId: String): String {
-    final failRp = rp(sessionId, [
+    comKey = sessionId;
+    final failRp = rp([
       "key" => Js.ws(""),
       "conKey" => Js.ws(""),
       "user" => Js.ws(""),
@@ -255,7 +258,7 @@ class Cgi {
             replaceSession(new Session(
               s.id, s.comKey, conKey, s.user, s.level, s.time, s.lapse
             ));
-            return rp(sessionId, [
+            return rp([
               "key" => Js.ws(s.comKey),
               "conKey" => Js.ws(conKey),
               "user" => Js.ws(s.user),
@@ -283,23 +286,24 @@ class Cgi {
   public static function authentication (
     key: String, user: String, pass: String, withExpiration: Bool
   ): String {
+    comKey = key;
     var sessionId = "";
-    var comKey = "";
+    var newComKey = "";
     var conKey = "";
     var level = checkUser(user, pass);
 
     if (level != "") {
       sessionId = Cryp.genK(klen);
-      comKey = Cryp.genK(klen);
+      newComKey = Cryp.genK(klen);
       conKey = Cryp.genK(klen);
       final lapse = withExpiration ? tExpiration : tNoExpiration;
 
-      addSession(sessionId, comKey, conKey, user, level, lapse);
+      addSession(sessionId, newComKey, conKey, user, level, lapse);
     }
 
-    return rp(key, [
+    return rp([
       "sessionId" => Js.ws(sessionId),
-      "key" => Js.ws(comKey),
+      "key" => Js.ws(newComKey),
       "conKey" => Js.ws(conKey),
       "level" => Js.ws(level),
     ]);
@@ -314,9 +318,10 @@ class Cgi {
     switch (It.from(readSessions()).find(s -> s.id == ssId)) {
       case Some(s): {
         if (conKey != "" && conKey != s.conKey) return None;
-
         switch (updateSession(s)) {
-          case Some(s): return Some(s.comKey);
+          case Some(s):
+            comKey = s.comKey;
+            return Some(s.comKey);
           case None: return None;
         }
       }
@@ -333,7 +338,7 @@ class Cgi {
   ///    return : Response with next field:
   ///               ok: Bool ('true' if operation succeds)
   public static function changePass (
-    ck: String, user: String, oldPass: String, newPass: String
+    user: String, oldPass: String, newPass: String
   ): String {
     var ok = false;
     final us = readUsers();
@@ -348,42 +353,39 @@ class Cgi {
         break;
       }
     }
-    return rp(ck, ["ok" => Js.wb(ok)]);
+    return rp(["ok" => Js.wb(ok)]);
   }
 
   /// Deletes 'sessionId' and returns an empty response.
-  ///    ck      : Communication key
   ///	  sessionId: Session identifier.
-  public static function delSession (ck: String, sessionId: String): String {
+  public static function delSession (sessionId: String): String {
     writeSessions(readSessions().filter(s -> s.id != sessionId));
-    return rpEmpty(ck);
+    return rpEmpty();
   }
 
   // RESPONSES
 
   // Returns a generic response to send to client.
-  //	 ck: Communication key.
   //	 rp: Response.
-  public static function rp (ck: String, rp: Map<String, Js>): String {
-    return Cryp.cryp(ck, Js.wo(rp).to());
+  public static function rp (rp: Map<String, Js>): String {
+    return Cryp.cryp(comKey, Js.wo(rp).to());
   }
 
   // Returns an empty response.
-  //	 ck: Communication key.
-  public static function rpEmpty (ck: String): String {
-    return rp(ck, []);
+  public static function rpEmpty (): String {
+    return rp([]);
   }
 
   // Returns a message with an only field "error" with value 'msg'.
-  //	 ck: Communication key.
-  public static function rpError (ck: String, msg: String): String {
-    return rp(ck, ["error" => Js.ws(msg)]);
+  public static function rpError (msg: String): String {
+    return rp(["error" => Js.ws(msg)]);
   }
 
   // Returns a message with an only field "expired" with value 'true',
   // codified with the key 'noSessionKey' ("nosession")
   public static function rpExpired (): String {
-    return rp(noSessionKey, ["expired" => Js.wb(true)]);
+    comKey = noSessionKey;
+    return rp(["expired" => Js.wb(true)]);
   }
 
   // REQUESTS
