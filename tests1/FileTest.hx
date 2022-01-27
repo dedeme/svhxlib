@@ -12,7 +12,7 @@ import dm.Dt;
 class FileTest {
   public static function main () {
     final t = new Test("File");
-    final dataDir = "/dm/dmHaxe/lib/svhxlib/tests/data";
+    final dataDir = "/dm/dmHaxe/lib/svhxlib/tests1/data";
     File.cd(dataDir);
     t.yes(File.cwd().endsWith(dataDir + "/"));
 

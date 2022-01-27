@@ -9,10 +9,6 @@ import dm.Tp3;
 
 class ItTests {
 
-  static function cb (n:Int, svfn:(String->Void)): Void {
-    haxe.Timer.delay(() -> svfn(Std.string(n)), 100);
-  }
-
   public static function run() {
     final t = new Test("It");
 
@@ -137,13 +133,20 @@ class ItTests {
     var sum = 0;
     It.from(is).each(n -> sum += n);
     t.eq(sum, 0);
+
     var sumTx = "";
-    It.from(is).eachSync(
+    function cb (n:Int, frec: () -> Void): Void {
+      haxe.Timer.delay(() -> {
+        sumTx += "" + n;
+        frec();
+      }, 100);
+    }
+    It.from(is).eachSyn(
       cb,
-      n -> sumTx += n,
       () -> t.eq(sumTx, ""),
       (e) -> t.yes(false)
     );
+
     t.eq(It.from(is).reduce(0, (seed, n) -> return seed + n), 0);
     t.yes(It.from(is).takeWhile(n -> return n < 3).eq(It.from(is)));
     t.yes(It.from(is).takeUntil(n -> return n > 2).eq(It.from(is)));
@@ -162,12 +165,17 @@ class ItTests {
     sum = 0;
     It.from(is).each(n -> sum += n);
     t.eq(sum, 3632);
-    var sumTx1 = "";
-    It.from(is).eachSync(
-      cb,
-      n -> sumTx1 += n,
-      () -> t.eq(sumTx1, "3632"),
-      (e) -> trace(e)
+    var sumTx2 = "";
+    function cb2 (n:Int, frec: () -> Void): Void {
+      haxe.Timer.delay(() -> {
+        sumTx2 += "" + n;
+        frec();
+      }, 100);
+    }
+    It.from(is).eachSyn(
+      cb2,
+      () -> t.eq(sumTx2, "3632"),
+      (e) -> t.yes(false)
     );
     t.eq(It.from(is).reduce(0, (seed, n) -> return seed + n), 3632);
     t.yes(It.from(is).takeWhile(n -> return n < 3).eq(It.empty()));
@@ -184,12 +192,17 @@ class ItTests {
     sum = 0;
     It.from(is).each(n -> sum += n);
     t.eq(sum, 6);
-    var sumTx2 = "";
-    It.from(is).eachSync(
-      cb,
-      n -> sumTx2 += n,
-      () -> t.eq(sumTx2, "123"),
-      (e) -> trace(e)
+    var sumTx3 = "";
+    function cb3 (n:Int, frec: () -> Void): Void {
+      haxe.Timer.delay(() -> {
+        sumTx3 += "" + n;
+        frec();
+      }, 100);
+    }
+    It.from(is).eachSyn(
+      cb3,
+      () -> t.eq(sumTx3, "123"),
+      (e) -> t.yes(false)
     );
     t.eq(It.from(is).reduce(0, (seed, n) -> return seed + n), 6);
     t.yes(It.from(is).map(n -> n * 2).eq(It.from([2,4,6])));
@@ -230,7 +243,7 @@ class ItTests {
     t.yes(It.box([]).eq(It.empty()));
     t.eq(It.box([3]).take(2).toString(), "It[3,3]");
     t.eq(It.mbox(["a" => 2]).take(2).toString(), "It[a,a]");
-/*    var box = It.box([3, 4]).take(2).to();
+    var box = It.box([3, 4]).take(2).to();
     t.yes(
       It.from(box).eq(It.from([3,4])) ||
       It.from(box).eq(It.from([4, 3]))
@@ -245,7 +258,7 @@ class ItTests {
       It.from(bx).eq(It.from(["b","a","a","a"])) ||
       It.from(bx).eq(It.from(["b","a","a","b"]))
     );
-/*
+
     t.yes(It.zip(It.from([]), It.from([2])).eq(It.empty()));
     var tpa = It.zip(It.from(["a"]), It.from([2])).to();
     t.eq(tpa.length, 1);
@@ -270,12 +283,12 @@ class ItTests {
     tpa3 = It.zip3(It.from(["a"]), It.from([2]), It.from([3, 20, 12])).to();
     t.eq(tpa3.length, 1);
     t.eq(tpa3[0], new Tp3("a", 2, 3), Tp3.equals);
-/*
+
     final m1 = ["a" => 1, "b" => 2];
     final m2 = Opt.get(It.fromMap(m1).toMap());
     t.eq(m2["a"], 1);
     t.eq(m2["b"], 2);
-*/
+
     t.log();
   }
 }
